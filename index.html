@@ -78,7 +78,7 @@
         button:hover {
             background-color: #0077b6;
         }
-        #game-over {
+        #game-over, #win {
             display: none;
             font-size: 24px;
             color: white;
@@ -133,6 +133,7 @@
         <button id="playAgainButton" style="display: none;">Play Again</button>
     </div>
     <div id="game-over">You Lost Not cutieeeeeeeeee patoutiiiiiiiiiii!</div>
+    <div id="win">You Won! Congratulations!</div>
 
     <!-- Enhanced Touch Controls -->
     <div class="touch-controls">
@@ -182,8 +183,9 @@
             // Reset score display
             document.getElementById('score').textContent = score;
 
-            // Hide game over message and show the start button
+            // Hide game over and win messages and show the start button
             document.getElementById('game-over').style.display = 'none';
+            document.getElementById('win').style.display = 'none';
             document.getElementById('startButton').style.display = 'none';
             document.getElementById('playAgainButton').style.display = 'none';
 
@@ -216,7 +218,8 @@
         function handleLogoClick() {
             clickCount++;
             if (clickCount === 3) {
-                activateCheatMode();
+                clickCount = 0;
+                document.getElementById('startButton').style.display = 'block';
             }
         }
 
@@ -279,7 +282,7 @@
 
                 // Check if the score reaches or exceeds 60
                 if (score >= 60) {
-                    endGame();
+                    winGame();
                     return;
                 }
             } else {
@@ -329,6 +332,14 @@
             clearInterval(gameInterval);
             backgroundMusic.pause();
             document.getElementById('game-over').style.display = 'block';
+            document.getElementById('startButton').style.display = 'none';
+            document.getElementById('playAgainButton').style.display = 'block';
+        }
+
+        function winGame() {
+            clearInterval(gameInterval);
+            backgroundMusic.pause();
+            document.getElementById('win').style.display = 'block';
             document.getElementById('startButton').style.display = 'none';
             document.getElementById('playAgainButton').style.display = 'block';
         }
