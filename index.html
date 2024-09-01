@@ -246,11 +246,8 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw Snake
-            ctx.fillStyle = cheatActivated ? '#00b4d8' : '#ffd60a';
             for (let i = 0; i < snake.length; i++) {
-                ctx.fillRect(snake[i].x, snake[i].y, box, box);
-                ctx.strokeStyle = 'black';
-                ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+                ctx.drawImage(turtleImage, snake[i].x, snake[i].y, box, box);
             }
 
             // Draw Food
@@ -266,11 +263,22 @@
             if (direction === 'RIGHT') snakeX += box;
             if (direction === 'DOWN') snakeY += box;
 
+            // Wrap-around logic
+            if (snakeX < 0) snakeX = canvas.width - box;
+            if (snakeX >= canvas.width) snakeX = 0;
+            if (snakeY < 0) snakeY = canvas.height - box;
+            if (snakeY >= canvas.height) snakeY = 0;
+
             // Check if the snake eats the food
             if (snakeX === food.x && snakeY === food.y) {
                 food = generateNewFood();
                 score++;
                 document.getElementById('score').textContent = score;
+
+                // Speed mode: eat apples twice as fast
+                if (cheatActivated) {
+                    setGameSpeed(25);
+                }
             } else {
                 snake.pop();
             }
@@ -282,33 +290,13 @@
             if (cheatActivated) {
                 snake.unshift(newHead);
             } else {
-                // Check for wall collisions and self-collision
-                if (
-                    snakeX < 0 || snakeY < 0 ||
-                    snakeX >= canvas.width || snakeY >= canvas.height ||
-                    snakeCollision(newHead, snake)
-                ) {
+                // Check for self-collision
+                if (snakeCollision(newHead, snake.slice(1))) {
                     endGame();
-                } else {
-                    snake.unshift(newHead);
+                    return;
                 }
+                snake.unshift(newHead);
             }
-
-            // Check if cheat mode snake wins
-            if (cheatActivated && score === 60) {
-                clearInterval(gameInterval);
-                backgroundMusic.pause();
-                alert('Mabrook rbe7ti ya ghasgashi.');
-            }
-        }
-
-        function getSafeMoves(x, y) {
-            const moves = [];
-            if (!snakeCollision({ x: x - box, y: y }, snake)) moves.push('LEFT');
-            if (!snakeCollision({ x: x + box, y: y }, snake)) moves.push('RIGHT');
-            if (!snakeCollision({ x: x, y: y - box }, snake)) moves.push('UP');
-            if (!snakeCollision({ x: x, y: y + box }, snake)) moves.push('DOWN');
-            return moves;
         }
 
         function generateNewFood() {
