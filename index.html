@@ -176,10 +176,7 @@
             // Initialize game variables
             snake = [{ x: 10 * box, y: 10 * box }];
             direction = 'RIGHT';
-            food = {
-                x: Math.floor(Math.random() * 20) * box,
-                y: Math.floor(Math.random() * 20) * box
-            };
+            food = generateNewFood();
             score = 0;
 
             // Reset score display
@@ -278,6 +275,12 @@
                 // Speed mode: eat apples twice as fast
                 if (cheatActivated) {
                     setGameSpeed(25);
+                }
+
+                // Check if the score reaches or exceeds 60
+                if (score >= 60) {
+                    endGame();
+                    return;
                 }
             } else {
                 snake.pop();
