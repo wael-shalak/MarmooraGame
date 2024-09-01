@@ -20,6 +20,13 @@
             font-size: 48px;
             color: black;
             margin: 0;
+            cursor: pointer;
+        }
+        #tipMessage {
+            margin-top: 10px;
+            font-size: 16px;
+            color: red;
+            display: none;
         }
         .game-container {
             display: flex;
@@ -75,19 +82,19 @@
         .touch-controls {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
             margin-top: 20px;
         }
         .touch-row {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             justify-content: center;
         }
         .touch-button {
-            width: 50px;
-            height: 50px;
-            font-size: 18px;
-            border-radius: 5px;
+            width: 70px;
+            height: 70px;
+            font-size: 24px;
+            border-radius: 10px;
             border: none;
             background-color: #007bff;
             color: white;
@@ -100,20 +107,21 @@
     </style>
 </head>
 <body>
-    <h1>Waoul Marmoora Game</h1>
+    <h1 id="gameTitle">Waoul Marmoora Game</h1>
+    <div id="tipMessage">Tired of losing? Try pressing the "Marmoora's picture 3 times in a row".</div>
     <div class="score">Score: <span id="score">0</span></div>
     <div class="game-container">
         <img src="picture22.jpeg" alt="Logo" class="logo left-logo" id="leftLogo">
         <canvas id="gameCanvas" width="600" height="600"></canvas>
-        <img src="picture21.jpg" alt="Logo" class="logo right-logo">
+        <img src="picture21.jpg" alt="Logo" class="logo right-logo" id="rightLogo">
     </div>
     <div class="button-container">
         <button id="startButton">Start</button>
         <button id="playAgainButton" style="display: none;">Play Again</button>
     </div>
-    <div id="game-over">You Lost Not cutieee patoutiiiiiiiiiii!</div>
+    <div id="game-over">You Lost not cutieeeeeeeeee patoutiiiiiiiiiii!</div>
 
-    <!-- Simplified Touch Controls -->
+    <!-- Enhanced Touch Controls -->
     <div class="touch-controls">
         <button class="touch-button" id="upButton">↑</button>
         <div class="touch-row">
@@ -134,11 +142,12 @@
         const turtleImage = new Image();
         appleImage.src = 'apple.png';
         turtleImage.src = 'turtle.png';
-        let snake, direction, food, score;
+        let snake, direction, food, score, lossCount = 0;
         let gameInterval;
         const backgroundMusic = document.getElementById('backgroundMusic');
         let cheatActivated = false;
         let clickCount = 0;
+        let titleClickCount = 0;
 
         document.getElementById('startButton').addEventListener('click', startGame);
         document.getElementById('playAgainButton').addEventListener('click', startGame);
@@ -147,6 +156,8 @@
         document.getElementById('leftButton').addEventListener('click', () => changeDirection({ key: 'ArrowLeft' }));
         document.getElementById('rightButton').addEventListener('click', () => changeDirection({ key: 'ArrowRight' }));
         document.getElementById('leftLogo').addEventListener('click', handleLogoClick);
+        document.getElementById('rightLogo').addEventListener('click', () => window.location.href = 'https://youtube.com/shorts/TKvk4UGEOUg?si=zmyeOV5FiawtkcZg');
+        document.getElementById('gameTitle').addEventListener('click', handleTitleClick);
 
         function startGame() {
             // Initialize game variables
@@ -157,9 +168,11 @@
                 y: Math.floor(Math.random() * 20) * box
             };
             score = 0;
+            lossCount = 0;
 
             // Reset score display
             document.getElementById('score').textContent = score;
+            document.getElementById('tipMessage').style.display = 'none';
 
             // Hide game over message and show the start button
             document.getElementById('game-over').style.display = 'none';
@@ -194,8 +207,15 @@
 
         function handleLogoClick() {
             clickCount++;
-            if (clickCount === 5) {
+            if (clickCount === 3) {
                 activateCheatMode();
+            }
+        }
+
+        function handleTitleClick() {
+            titleClickCount++;
+            if (titleClickCount === 3) {
+                window.location.href = 'https://youtube.com/shorts/EOFxoSIYsX4?si=nNo7z3vC4YUFRISG';
             }
         }
 
@@ -220,30 +240,19 @@
             // Draw Food
             ctx.drawImage(appleImage, food.x, food.y, box, box);
 
-            // Snake head position
+            // Get current snake position
             let snakeX = snake[0].x;
             let snakeY = snake[0].y;
 
-            // Automatic movement towards food if cheat is activated
-            if (cheatActivated) {
-                const possibleMoves = getSafeMoves(snakeX, snakeY);
-                if (possibleMoves.includes('LEFT') && snakeX > food.x) direction = 'LEFT';
-                else if (possibleMoves.includes('UP') && snakeY > food.y) direction = 'UP';
-                else if (possibleMoves.includes('RIGHT') && snakeX < food.x) direction = 'RIGHT';
-                else if (possibleMoves.includes('DOWN') && snakeY < food.y) direction = 'DOWN';
-                else if (possibleMoves.length > 0) direction = possibleMoves[0];
-            }
-
-            // Snake movement
+            // Update snake's position based on direction
             if (direction === 'LEFT') snakeX -= box;
             if (direction === 'UP') snakeY -= box;
             if (direction === 'RIGHT') snakeX += box;
             if (direction === 'DOWN') snakeY += box;
 
-            // Check for collision with food
+            // Check if the snake eats the food
             if (snakeX === food.x && snakeY === food.y) {
                 food = generateNewFood();
-                snake.push({ ...snake[snake.length - 1] });
                 score++;
                 document.getElementById('score').textContent = score;
             } else {
@@ -253,15 +262,20 @@
             // New head position
             const newHead = { x: snakeX, y: snakeY };
 
-            // Check for wall collisions and self-collision
-            if (
-                snakeX < 0 || snakeY < 0 ||
-                snakeX >= canvas.width || snakeY >= canvas.height ||
-                snakeCollision(newHead, snake)
-            ) {
-                endGame();
-            } else {
+            // Enhanced collision detection for cheat mode
+            if (cheatActivated) {
                 snake.unshift(newHead);
+            } else {
+                // Check for wall collisions and self-collision
+                if (
+                    snakeX < 0 || snakeY < 0 ||
+                    snakeX >= canvas.width || snakeY >= canvas.height ||
+                    snakeCollision(newHead, snake)
+                ) {
+                    endGame();
+                } else {
+                    snake.unshift(newHead);
+                }
             }
 
             // Check if cheat mode snake wins
@@ -302,6 +316,10 @@
             document.getElementById('game-over').style.display = 'block';
             document.getElementById('startButton').style.display = 'none';
             document.getElementById('playAgainButton').style.display = 'block';
+            lossCount++;
+            if (lossCount === 3) {
+                document.getElementById('tipMessage').style.display = 'block';
+            }
         }
     </script>
 </body>
