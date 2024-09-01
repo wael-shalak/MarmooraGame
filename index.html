@@ -12,21 +12,23 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f0f0;
+            background: linear-gradient(135deg, #ffcc70 25%, #f27e63 50%, #e63946 75%, #8338ec);
+            background-size: 200% 200%;
+            animation: backgroundAnimation 10s ease-in-out infinite;
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+        @keyframes backgroundAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         h1 {
             font-size: 48px;
-            color: black;
+            color: white;
             margin: 0;
+            text-shadow: 2px 2px 4px #000000;
             cursor: pointer;
-        }
-        #tipMessage {
-            margin-top: 10px;
-            font-size: 16px;
-            color: red;
-            display: none;
         }
         .game-container {
             display: flex;
@@ -35,12 +37,19 @@
             position: relative;
         }
         canvas {
-            border: 2px solid #000;
-            background-color: #333;
+            border: 3px solid #ff006e;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
         }
         .logo {
             width: 100px;
             cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            transition: transform 0.2s;
+        }
+        .logo:hover {
+            transform: scale(1.1);
         }
         .left-logo {
             position: absolute;
@@ -61,23 +70,26 @@
             cursor: pointer;
             border: none;
             border-radius: 5px;
-            background-color: #007bff;
+            background-color: #48cae4;
             color: white;
             transition: background-color 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #0077b6;
         }
         #game-over {
             display: none;
             font-size: 24px;
-            color: black;
+            color: white;
             margin-top: 20px;
+            text-shadow: 1px 1px 2px #000000;
         }
         .score {
             font-size: 24px;
-            color: black;
+            color: white;
             margin-bottom: 20px;
+            text-shadow: 1px 1px 2px #000000;
         }
         .touch-controls {
             display: flex;
@@ -96,19 +108,20 @@
             font-size: 24px;
             border-radius: 10px;
             border: none;
-            background-color: #007bff;
+            background-color: #ffb703;
             color: white;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         .touch-button:active {
-            background-color: #0056b3;
+            background-color: #fb8500;
+            transform: scale(0.9);
         }
     </style>
 </head>
 <body>
     <h1 id="gameTitle">Waoul Marmoora Game</h1>
-    <div id="tipMessage">Tired of losing? Try pressing the "Marmoora's picture 3 times in a row".</div>
     <div class="score">Score: <span id="score">0</span></div>
     <div class="game-container">
         <img src="picture22.jpeg" alt="Logo" class="logo left-logo" id="leftLogo">
@@ -119,7 +132,7 @@
         <button id="startButton">Start</button>
         <button id="playAgainButton" style="display: none;">Play Again</button>
     </div>
-    <div id="game-over">You Lost not cutieeeeeeeeee patoutiiiiiiiiiii!</div>
+    <div id="game-over">You Lost Not cutieeeeeeeeee patoutiiiiiiiiiii!</div>
 
     <!-- Enhanced Touch Controls -->
     <div class="touch-controls">
@@ -142,7 +155,7 @@
         const turtleImage = new Image();
         appleImage.src = 'apple.png';
         turtleImage.src = 'turtle.png';
-        let snake, direction, food, score, lossCount = 0;
+        let snake, direction, food, score;
         let gameInterval;
         const backgroundMusic = document.getElementById('backgroundMusic');
         let cheatActivated = false;
@@ -168,11 +181,9 @@
                 y: Math.floor(Math.random() * 20) * box
             };
             score = 0;
-            lossCount = 0;
 
             // Reset score display
             document.getElementById('score').textContent = score;
-            document.getElementById('tipMessage').style.display = 'none';
 
             // Hide game over message and show the start button
             document.getElementById('game-over').style.display = 'none';
@@ -215,26 +226,31 @@
         function handleTitleClick() {
             titleClickCount++;
             if (titleClickCount === 3) {
-                window.location.href = 'https://youtube.com/shorts/EOFxoSIYsX4?si=nNo7z3vC4YUFRISG';
+                window.location.href = 'https://youtube.com/shorts/SXHMnicI6Pg?si=NEHWnmwm7NhtZUrf';
             }
         }
 
         function activateCheatMode() {
             cheatActivated = true;
-            setGameSpeed(50); // Increase speed for cheat mode
+            clearInterval(gameInterval);
+            setGameSpeed(50);
+            alert('Cheat mode activated!');
         }
 
-        function setGameSpeed(interval) {
-            clearInterval(gameInterval);
-            gameInterval = setInterval(draw, interval);
+        function setGameSpeed(speed) {
+            gameInterval = setInterval(draw, speed);
         }
 
         function draw() {
+            // Clear previous frame
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw Snake
+            ctx.fillStyle = cheatActivated ? '#00b4d8' : '#ffd60a';
             for (let i = 0; i < snake.length; i++) {
-                ctx.drawImage(turtleImage, snake[i].x, snake[i].y, box, box);
+                ctx.fillRect(snake[i].x, snake[i].y, box, box);
+                ctx.strokeStyle = 'black';
+                ctx.strokeRect(snake[i].x, snake[i].y, box, box);
             }
 
             // Draw Food
@@ -279,7 +295,7 @@
             }
 
             // Check if cheat mode snake wins
-            if (cheatActivated && score === 20) { // Assuming 20 is the winning score
+            if (cheatActivated && score === 60) {
                 clearInterval(gameInterval);
                 backgroundMusic.pause();
                 alert('Mabrook rbe7ti ya ghasgashi.');
@@ -316,10 +332,6 @@
             document.getElementById('game-over').style.display = 'block';
             document.getElementById('startButton').style.display = 'none';
             document.getElementById('playAgainButton').style.display = 'block';
-            lossCount++;
-            if (lossCount === 3) {
-                document.getElementById('tipMessage').style.display = 'block';
-            }
         }
     </script>
 </body>
