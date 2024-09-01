@@ -76,7 +76,7 @@
         <button id="startButton">Start</button>
         <button id="playAgainButton" style="display: none;">Play Again</button>
     </div>
-    <div id="game-over">You Lost Not Cutie Patoutiiiiiiiii!</div>
+    <div id="game-over">You Lost!</div>
 
     <audio id="backgroundMusic" src="background-music.mp3" loop></audio>
 
@@ -117,8 +117,10 @@
             // Start the game
             gameInterval = setInterval(draw, 100);
 
-            // Play background music
-            backgroundMusic.play();
+            // Play or resume background music
+            if (backgroundMusic.paused) {
+                backgroundMusic.play();
+            }
 
             // Add event listener for direction change
             document.addEventListener('keydown', changeDirection);
@@ -183,7 +185,8 @@
                 clearInterval(gameInterval);
                 document.getElementById('game-over').style.display = 'block';
                 document.getElementById('playAgainButton').style.display = 'inline-block';
-                backgroundMusic.pause();  // Pause music on game over
+                // Pause music on game over
+                backgroundMusic.pause();
             }
 
             snake.unshift(newHead);
@@ -200,5 +203,3 @@
     </script>
 </body>
 </html>
-
-
