@@ -33,6 +33,7 @@
         }
         .logo {
             width: 100px;
+            cursor: pointer;
         }
         .left-logo {
             position: absolute;
@@ -102,7 +103,7 @@
     <h1>Waoul Marmoora Game</h1>
     <div class="score">Score: <span id="score">0</span></div>
     <div class="game-container">
-        <img src="picture22.jpeg" alt="Logo" class="logo left-logo">
+        <img src="picture22.jpeg" alt="Logo" class="logo left-logo" id="leftLogo">
         <canvas id="gameCanvas" width="600" height="600"></canvas>
         <img src="picture21.jpg" alt="Logo" class="logo right-logo">
     </div>
@@ -110,7 +111,7 @@
         <button id="startButton">Start</button>
         <button id="playAgainButton" style="display: none;">Play Again</button>
     </div>
-    <div id="game-over">You Lost Not Cutieeeeeeeeee Patoutiiiiiiiiiii!</div>
+    <div id="game-over">You Lost, Not cutieeeeeeeeee patoutiiiiiiiiiii!</div>
 
     <!-- Touch controls -->
     <div class="touch-controls">
@@ -138,6 +139,8 @@
         let snake, direction, food, score;
         let gameInterval;
         const backgroundMusic = document.getElementById('backgroundMusic');
+        let cheatActivated = false;
+        let clickCount = 0;
 
         document.getElementById('startButton').addEventListener('click', startGame);
         document.getElementById('playAgainButton').addEventListener('click', startGame);
@@ -145,6 +148,7 @@
         document.getElementById('downButton').addEventListener('click', () => changeDirection({ key: 'ArrowDown' }));
         document.getElementById('leftButton').addEventListener('click', () => changeDirection({ key: 'ArrowLeft' }));
         document.getElementById('rightButton').addEventListener('click', () => changeDirection({ key: 'ArrowRight' }));
+        document.getElementById('leftLogo').addEventListener('click', handleLogoClick);
 
         function startGame() {
             // Initialize game variables
@@ -177,14 +181,23 @@
         }
 
         function changeDirection(event) {
-            if (event.key === 'ArrowLeft' && direction !== 'RIGHT') {
-                direction = 'LEFT';
-            } else if (event.key === 'ArrowUp' && direction !== 'DOWN') {
-                direction = 'UP';
-            } else if (event.key === 'ArrowRight' && direction !== 'LEFT') {
-                direction = 'RIGHT';
-            } else if (event.key === 'ArrowDown' && direction !== 'UP') {
-                direction = 'DOWN';
+            if (!cheatActivated) {
+                if (event.key === 'ArrowLeft' && direction !== 'RIGHT') {
+                    direction = 'LEFT';
+                } else if (event.key === 'ArrowUp' && direction !== 'DOWN') {
+                    direction = 'UP';
+                } else if (event.key === 'ArrowRight' && direction !== 'LEFT') {
+                    direction = 'RIGHT';
+                } else if (event.key === 'ArrowDown' && direction !== 'UP') {
+                    direction = 'DOWN';
+                }
+            }
+        }
+
+        function handleLogoClick() {
+            clickCount++;
+            if (clickCount === 5) {
+                cheatActivated = true;
             }
         }
 
@@ -202,6 +215,14 @@
             // Snake head position
             let snakeX = snake[0].x;
             let snakeY = snake[0].y;
+
+            // Automatic movement towards food if cheat is activated
+            if (cheatActivated) {
+                if (snakeX < food.x) direction = 'RIGHT';
+                else if (snakeX > food.x) direction = 'LEFT';
+                else if (snakeY < food.y) direction = 'DOWN';
+                else if (snakeY > food.y) direction = 'UP';
+            }
 
             // Snake movement
             if (direction === 'LEFT') snakeX -= box;
@@ -228,21 +249,30 @@
 
             // Game over conditions
             if (
-                snakeX < 0 || snakeY < 0 ||
-                snakeX >= canvas.width || snakeY >= canvas.height ||
-                collision(newHead, snake)
+                snakeX < 0 ||
+                snakeY < 0 ||
+                snakeX >= canvas.width ||
+                snakeY >= canvas.height ||
+                snakeCollision(newHead, snake)
             ) {
                 clearInterval(gameInterval);
-                document.getElementById('game-over').style.display = 'block';
-                document.getElementById('playAgainButton').style.display = 'inline-block';
-                // Pause music on game over
                 backgroundMusic.pause();
+                document.getElementById('game-over').style.display = 'block';
+                document.getElementById('startButton').style.display = 'none';
+                document.getElementById('playAgainButton').style.display = 'block';
+            } else {
+                snake.unshift(newHead);
             }
 
-            snake.unshift(newHead);
+            // Check if cheat mode snake wins
+            if (cheatActivated && score === 20) { // Assuming 20 is the winning score
+                clearInterval(gameInterval);
+                backgroundMusic.pause();
+                alert('Mabrook rbe7ti ya ghasgashi.');
+            }
         }
 
-        function collision(head, array) {
+        function snakeCollision(head, array) {
             for (let i = 0; i < array.length; i++) {
                 if (head.x === array[i].x && head.y === array[i].y) {
                     return true;
