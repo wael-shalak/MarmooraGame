@@ -171,7 +171,11 @@
         document.getElementById('rightButton').addEventListener('click', () => changeDirection({ key: 'ArrowRight' }));
         document.getElementById('leftLogo').addEventListener('click', handleLogoClick);
         document.getElementById('rightLogo').addEventListener('click', () => window.location.href = 'https://youtube.com/shorts/TKvk4UGEOUg?si=zmyeOV5FiawtkcZg');
-        document.getElementById('gameTitle').addEventListener('click', handleTitleClick);
+        document.getElementById('gameTitle').addEventListener('click', () => {
+            if (!cheatActivated) {
+                window.location.href = 'https://youtube.com/shorts/TKvk4UGEOUg?si=zmyeOV5FiawtkcZg';
+            }
+        });
 
         function startGame() {
             // Initialize game variables
@@ -218,15 +222,8 @@
         function handleLogoClick() {
             clickCount++;
             if (clickCount === 3) {
-                clickCount = 0;
                 activateCheatMode();
-            }
-        }
-
-        function handleTitleClick() {
-            titleClickCount++;
-            if (titleClickCount === 5) {
-                activateCheatMode();
+                clickCount = 0; // Reset click count after activating cheat mode
             }
         }
 
